@@ -42,11 +42,18 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.17.1'
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.17.1'
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformats-binary
+//    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformats-binary', version: '2.17.1', ext: 'pom'
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-avro
+    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-avro', version: '2.17.1'
+
 
     // https://mvnrepository.com/artifact/com.sun.jersey/jersey-client
     // migrate
     implementation group: 'com.sun.jersey', name: 'jersey-client', version: '1.19.4'
 
+    // https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
+    implementation group: 'org.apache.kafka', name: 'kafka-clients', version: '3.7.1'
 
 
 
@@ -57,4 +64,20 @@ test {
 }
 kotlin {
     jvmToolchain(17)
+}
+
+//ext {
+//    javaMainClass = "com.mvasce.Runner"
+//}
+//
+//application {
+//    mainClassName = javaMainClass
+//}
+task runApp(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+
+    mainClass = 'com.mvasce.betfair.Runner'
+
+    // arguments to pass to the application
+//    args 'appArg1'
 }
