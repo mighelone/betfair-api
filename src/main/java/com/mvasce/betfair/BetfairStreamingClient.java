@@ -7,7 +7,8 @@ import com.betfair.esa.swagger.model.MarketFilter;
 
 import java.util.List;
 
-public class Runner {
+public class BetfairStreamingClient {
+//    private final Client client;
 
 //    public static void main(String[] args) throws StatusException, ConnectionException, InvalidCredentialException {
 //        AppKeyAndSessionProvider sessionProvider = new AppKeyAndSessionProvider("identitysso.betfair.com", "EfcnNLv9DoymnCjn", "michele.vascellari@gmail.com", "Durlindana66?");
@@ -37,4 +38,18 @@ public class Runner {
         filter.setFields(List.of(FieldsEnum.EX_BEST_OFFERS_DISP, FieldsEnum.EX_MARKET_DEF, FieldsEnum.EX_TRADED));
         return filter;
     }
+
+//    public Client getClient() {
+//                AppKeyAndSessionProvider sessionProvider = new AppKeyAndSessionProvider("identitysso.betfair.com", "EfcnNLv9DoymnCjn", "michele.vascellari@gmail.com", "Durlindana66?");
+//        Client client = new Client("stream-api.betfair.com", 443, sessionProvider);
+//        KafkaProducer<String, String> producer = KafkaProducerFactory.getProducer();
+//        client.setChangeHandler(new HandleMarketChanges(producer, "market-changes"));
+//        MarketSubscriptionMessage subscription = new MarketSubscriptionMessage();
+//        subscription.setMarketFilter(getMarketFilter());
+//        subscription.setConflateMs(0L);
+//        subscription.setHeartbeatMs(1000L);
+//        subscription.setMarketDataFilter(getMarketDataFilter());
+//        client.start();
+//        client.marketSubscription(subscription);
+//    }
 }

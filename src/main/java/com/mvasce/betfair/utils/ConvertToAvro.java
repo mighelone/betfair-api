@@ -1,4 +1,4 @@
-package com.mvasce.betfair;
+package com.mvasce.betfair.utils;
 
 import com.betfair.esa.swagger.model.MarketChange;
 import com.fasterxml.jackson.databind.JsonMappingException;
