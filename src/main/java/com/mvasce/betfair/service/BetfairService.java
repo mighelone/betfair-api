@@ -19,16 +19,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 public class BetfairService {
-//    @Autowired
-//    private final KafkaTemplate<String,String> kafkaTemplate;
+
     @Autowired
     private final KafkaHandleMarketChanges handler;
 
-//    @Autowired
 
-
-
-//    public void process(String key) {}
     @EventListener(ApplicationReadyEvent.class)
     void run()  {
         MarketSubscriptionMessage subscription = MarketSubscriptionMessageFactory.getSubscriptionMessage();
@@ -42,11 +37,5 @@ public class BetfairService {
             throw new RuntimeException(e);
         }
     }
-////        String topic = "dummy";
-////        while (true) {
-////            kafkaTemplate.send(topic, "Name", "sfsgfsggs");
-////            log.info("Sent message");
-////            Thread.sleep(2000L);
-////        }
-//    }
+
 }

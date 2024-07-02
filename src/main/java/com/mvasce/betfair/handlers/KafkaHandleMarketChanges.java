@@ -5,7 +5,6 @@ import com.betfair.esa.client.protocol.ChangeMessageHandler;
 import com.betfair.esa.swagger.model.MarketChange;
 import com.betfair.esa.swagger.model.OrderMarketChange;
 import com.betfair.esa.swagger.model.StatusMessage;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,7 @@ import org.springframework.stereotype.Component;
 public class KafkaHandleMarketChanges implements ChangeMessageHandler {
 
     @Autowired
-    private final KafkaTemplate<String,String> kafkaTemplate;
+    private final KafkaTemplate<String,com.mvasce.betfair.models.MarketChange> kafkaTemplate;
     private final ObjectMapper mapper = getObjectMapper();
 
     private ObjectMapper getObjectMapper() {
@@ -48,39 +47,32 @@ public class KafkaHandleMarketChanges implements ChangeMessageHandler {
         log.info("Market Change" + change.getChangeType());
         change.getItems().forEach(
                 x -> {
-
-                    String key = x.getId();
-                    try {
-                        com.mvasce.betfair.models.MarketChange market = new com.mvasce.betfair.models.MarketChange(
-                                x,
-                                change.getArrivalTime(),
-                                change.getPublishTime(),
-                                change.getId(),
-                                change.getClk(),
-                                change.getInitialClk(),
-                                change.getHeartbeatMs(),
-                                change.getConflateMs(),
-                                change.getSegmentType(),
-                                change.getChangeType()
-                        );
-                        String value = mapper.writeValueAsString(market);
-                        kafkaTemplate.send(
-                                "market-changes",
-                                key,
-                                value
-                        );
-                        if (log.isDebugEnabled()) log.debug("Market Id=" + x.getId());
-                    } catch (JsonProcessingException e) {
-//                        throw new RuntimeException(e);
-                        log.error("Failed serializing market id=" + x.getId());
-                    }
+                    com.mvasce.betfair.models.MarketChange market = new com.mvasce.betfair.models.MarketChange(
+                            x,
+                            change.getArrivalTime(),
+                            change.getPublishTime(),
+                            change.getId(),
+                            change.getClk(),
+                            change.getInitialClk(),
+                            change.getHeartbeatMs(),
+                            change.getConflateMs(),
+                            change.getSegmentType(),
+                            change.getChangeType()
+                    );
+//                        String value = mapper.writeValueAsString(market);
+                    kafkaTemplate.send(
+                            "market-changes",
+                            x.getId(),
+                            market
+                    );
+                    if (log.isDebugEnabled()) log.debug("Market Id=" + x.getId());
                 }
         );
     }
 
     @Override
     public void onErrorStatusNotification(StatusMessage message) {
-
+        log.error(message.toString());
     }
 
 
