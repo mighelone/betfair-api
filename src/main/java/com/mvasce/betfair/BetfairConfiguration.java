@@ -7,6 +7,7 @@ import com.betfair.esa.swagger.model.MarketFilter;
 import com.betfair.esa.swagger.model.MarketSubscriptionMessage;
 import com.mvasce.betfair.handlers.KafkaHandleMarketChanges;
 import com.mvasce.betfair.state.BetfairState;
+import com.mvasce.betfair.state.FileStateManager;
 import com.mvasce.betfair.state.StateManagerInterface;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,24 +43,31 @@ public class BetfairConfiguration {
     private String marketType;
     @Autowired
     private final KafkaHandleMarketChanges handler;
-//    private final StateManagerInterface state;
+    @Autowired
+    private StateManagerInterface stateManager;
+
 
     @Bean
     public Client getClient() {
         log.info("Initializing client: host: " + hostName  );
-//        BetfairState initialState = state.getState();
         AppKeyAndSessionProvider sessionProvider = new AppKeyAndSessionProvider(ssoHost, appKey, username, password);
         Client client = new Client(hostName, port, sessionProvider);
+        client.setAutoReconnect(true);
         client.setChangeHandler(handler);
         return client;
     }
 
     @Bean
     public MarketSubscriptionMessage getMarketSubscriptionMessage() {
+        BetfairState state = stateManager.getState();
         MarketSubscriptionMessage subscriptionMessage = new MarketSubscriptionMessage();
         MarketFilter marketFilter = getMarketFilter();
         MarketDataFilter marketDataFilter = getMarketDataFilter();
         subscriptionMessage.setMarketDataFilter(marketDataFilter);
+        if (state != null) {
+            subscriptionMessage.setClk(state.clk());
+            subscriptionMessage.setInitialClk(state.initialClk());
+        }
         subscriptionMessage.setMarketFilter(marketFilter);
         subscriptionMessage.setConflateMs(0L);
         subscriptionMessage.setHeartbeatMs(1000L);

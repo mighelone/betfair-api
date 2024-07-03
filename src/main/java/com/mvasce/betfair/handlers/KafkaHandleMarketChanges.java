@@ -8,6 +8,7 @@ import com.betfair.esa.swagger.model.OrderMarketChange;
 import com.betfair.esa.swagger.model.StatusMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.mvasce.betfair.state.StateManagerInterface;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ public class KafkaHandleMarketChanges implements ChangeMessageHandler {
 
     @Autowired
     private final KafkaTemplate<String,com.mvasce.betfair.models.MarketChange> kafkaTemplate;
+
+    @Autowired
+    private final StateManagerInterface stateManager;
 
 //    @Autowired
 //    private final MarketSubscriptionMessage marketSubscriptionMessage;
@@ -55,6 +59,7 @@ public class KafkaHandleMarketChanges implements ChangeMessageHandler {
                     if (log.isDebugEnabled()) log.debug("Market Id=" + x.getId());
                 }
         );
+        stateManager.setState(change.getClk(), change.getInitialClk());
     }
 
     @Override
