@@ -3,6 +3,7 @@ package com.mvasce.betfair.handlers;
 import com.betfair.esa.client.protocol.ChangeMessage;
 import com.betfair.esa.client.protocol.ChangeMessageHandler;
 import com.betfair.esa.swagger.model.MarketChange;
+import com.betfair.esa.swagger.model.MarketSubscriptionMessage;
 import com.betfair.esa.swagger.model.OrderMarketChange;
 import com.betfair.esa.swagger.model.StatusMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,22 +21,9 @@ public class KafkaHandleMarketChanges implements ChangeMessageHandler {
 
     @Autowired
     private final KafkaTemplate<String,com.mvasce.betfair.models.MarketChange> kafkaTemplate;
-    private final ObjectMapper mapper = getObjectMapper();
 
-    private ObjectMapper getObjectMapper() {
-        ObjectMapper mppr = new ObjectMapper();
-        mppr.registerModule(new JavaTimeModule());
-        return mppr;
-    }
-//    private final String topic;
-
-//    public KafkaHandleMarketChanges(KafkaProducer<String,String> producer, String topic) {
-//        this.producer = producer;
-//        this.topic = topic;
-//        mapper = new ObjectMapper();
-//        mapper.registerModule(new JavaTimeModule());
-//    }
-
+//    @Autowired
+//    private final MarketSubscriptionMessage marketSubscriptionMessage;
 
     @Override
     public void onOrderChange(ChangeMessage<OrderMarketChange> change) {
@@ -59,7 +47,6 @@ public class KafkaHandleMarketChanges implements ChangeMessageHandler {
                             change.getSegmentType(),
                             change.getChangeType()
                     );
-//                        String value = mapper.writeValueAsString(market);
                     kafkaTemplate.send(
                             "market-changes",
                             x.getId(),
