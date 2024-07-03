@@ -21,15 +21,11 @@ import org.springframework.stereotype.Service;
 public class BetfairService {
 
     @Autowired
-    private final KafkaHandleMarketChanges handler;
-
+    private final Client client;
 
     @EventListener(ApplicationReadyEvent.class)
     void run()  {
         MarketSubscriptionMessage subscription = MarketSubscriptionMessageFactory.getSubscriptionMessage();
-        AppKeyAndSessionProvider sessionProvider = new AppKeyAndSessionProvider("identitysso.betfair.com", "EfcnNLv9DoymnCjn", "michele.vascellari@gmail.com", "Durlindana66?");
-        Client client = new Client("stream-api.betfair.com", 443, sessionProvider);
-        client.setChangeHandler(handler);
         try {
             client.start();
             client.marketSubscription(subscription);
