@@ -2,13 +2,9 @@ package com.mvasce.betfair.state;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.DataInput;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Scanner;
 
 @RequiredArgsConstructor
 public class FileStateManager implements StateManagerInterface{

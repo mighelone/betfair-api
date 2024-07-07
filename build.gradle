@@ -3,6 +3,7 @@ plugins {
 //	id 'org.jetbrains.kotlin.jvm'
 	id 'org.springframework.boot' version '3.3.1'
 	id 'io.spring.dependency-management' version '1.1.5'
+	id 'com.google.cloud.tools.jib' version '3.4.3'
 }
 
 group = 'com.mvasce'
@@ -66,6 +67,15 @@ task runApp(type: JavaExec) {
 
 	mainClass = 'com.mvasce.betfair.BetfairApplication'
 
-	// arguments to pass to the application
-//    args 'appArg1'
+}
+
+jib {
+	from {
+		image = "openjdk:22"
+	}
+	to {
+		image = 'mighelone/betfair-api:latest'
+		tags = ['latest']
+		credHelper = 'osxkeychain'
+	}
 }
