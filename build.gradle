@@ -74,8 +74,8 @@ jib {
 		image = "openjdk:22"
 	}
 	to {
-		image = 'mighelone/betfair-api:latest'
-		tags = ['latest']
+		image = 'mighelone/betfair-api:0.0.1'
+		tags = ['latest', '0.0.1']
 		credHelper = 'osxkeychain'
 	}
 }
