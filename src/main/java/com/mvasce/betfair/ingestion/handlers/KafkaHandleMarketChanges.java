@@ -1,17 +1,15 @@
-package com.mvasce.betfair.handlers;
+package com.mvasce.betfair.ingestion.handlers;
 
 import com.betfair.esa.client.protocol.ChangeMessage;
 import com.betfair.esa.client.protocol.ChangeMessageHandler;
 import com.betfair.esa.swagger.model.MarketChange;
-import com.betfair.esa.swagger.model.MarketSubscriptionMessage;
 import com.betfair.esa.swagger.model.OrderMarketChange;
 import com.betfair.esa.swagger.model.StatusMessage;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.mvasce.betfair.state.StateManagerInterface;
+import com.mvasce.betfair.ingestion.state.StateManagerInterface;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -26,8 +24,9 @@ public class KafkaHandleMarketChanges implements ChangeMessageHandler {
     @Autowired
     private final StateManagerInterface stateManager;
 
-//    @Autowired
-//    private final MarketSubscriptionMessage marketSubscriptionMessage;
+    @Value("${betfair.topics.market-changes}")
+    private String topic;
+
 
     @Override
     public void onOrderChange(ChangeMessage<OrderMarketChange> change) {
@@ -52,11 +51,11 @@ public class KafkaHandleMarketChanges implements ChangeMessageHandler {
                             change.getChangeType()
                     );
                     kafkaTemplate.send(
-                            "market-changes",
+                            topic,
                             x.getId(),
                             market
                     );
-                    if (log.isDebugEnabled()) log.debug("Market Id=" + x.getId());
+                    if (log.isDebugEnabled()) log.debug("Market Id={}", x.getId());
                 }
         );
         stateManager.setState(change.getClk(), change.getInitialClk());

@@ -2,7 +2,6 @@ package com.mvasce.betfair.models;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public record Orderbook(
         List<OrderbookLevel> backPrices,
@@ -12,9 +11,6 @@ public record Orderbook(
 
     public Orderbook update(List<List<Double>> backPrices, List<List<Double>> layPrices, OrderbookMetadata metadata) {
         return new Orderbook(
-//                this.marketId,
-//                this.runnerId,
-//                this.handicap,
                 updatePrices(this.backPrices, backPrices),
                 updatePrices(this.layPrices, layPrices),
                 metadata
@@ -37,9 +33,6 @@ public record Orderbook(
 
     static public Orderbook empty() {
         return new Orderbook(
-//                null,
-//                null,
-//                null,
                 getEmptyOrderbook(),
                 getEmptyOrderbook(),
                 new OrderbookMetadata(0L, 0L, null, null)

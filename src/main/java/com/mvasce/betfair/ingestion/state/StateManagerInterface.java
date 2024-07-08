@@ -1,4 +1,4 @@
-package com.mvasce.betfair.state;
+package com.mvasce.betfair.ingestion.state;
 
 public interface StateManagerInterface {
     public void setState(String clk, String initialClk);

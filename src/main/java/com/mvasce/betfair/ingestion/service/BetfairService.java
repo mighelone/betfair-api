@@ -1,4 +1,4 @@
-package com.mvasce.betfair.service;
+package com.mvasce.betfair.ingestion.service;
 
 import com.betfair.esa.client.Client;
 import com.betfair.esa.client.auth.InvalidCredentialException;

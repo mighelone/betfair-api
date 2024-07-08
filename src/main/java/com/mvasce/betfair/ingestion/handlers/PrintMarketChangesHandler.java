@@ -1,4 +1,4 @@
-package com.mvasce.betfair.handlers;
+package com.mvasce.betfair.ingestion.handlers;
 
 import com.betfair.esa.client.protocol.ChangeMessage;
 import com.betfair.esa.client.protocol.ChangeMessageHandler;

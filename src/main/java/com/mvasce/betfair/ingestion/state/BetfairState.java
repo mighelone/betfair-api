@@ -1,4 +1,4 @@
-package com.mvasce.betfair.state;
+package com.mvasce.betfair.ingestion.state;
 
 public record BetfairState(String clk, String initialClk) {
 }

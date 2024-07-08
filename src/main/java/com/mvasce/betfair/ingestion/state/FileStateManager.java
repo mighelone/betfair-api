@@ -1,4 +1,4 @@
-package com.mvasce.betfair.state;
+package com.mvasce.betfair.ingestion.state;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

@@ -1,27 +1,34 @@
-package com.mvasce.betfair.streaming.orderbook;
+package com.mvasce.betfair.streaming;
 
 import com.mvasce.betfair.models.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.protocol.types.Field;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.support.serializer.JsonSerde;
 
 import java.util.List;
 
+@Slf4j
+@Configuration
 @RequiredArgsConstructor
 public class StreamBuilder {
 
+//    @Value("${betfair.}")
     final String inputTopic;
 
     final String outputTopic;
 
     final String materializedOrderbook;
 
-    @Bean
+    @Autowired
     public KStream<OrderbookKey, Orderbook> buildKStream(StreamsBuilder builder) {
         KStream<String, MarketChange> marketChanges = builder.stream(
                 inputTopic,

@@ -1,13 +1,13 @@
-package com.mvasce.betfair;
+package com.mvasce.betfair.ingestion;
 
 import com.betfair.esa.client.Client;
 import com.betfair.esa.client.auth.AppKeyAndSessionProvider;
 import com.betfair.esa.swagger.model.MarketDataFilter;
 import com.betfair.esa.swagger.model.MarketFilter;
 import com.betfair.esa.swagger.model.MarketSubscriptionMessage;
-import com.mvasce.betfair.handlers.KafkaHandleMarketChanges;
-import com.mvasce.betfair.state.BetfairState;
-import com.mvasce.betfair.state.StateManagerInterface;
+import com.mvasce.betfair.ingestion.handlers.KafkaHandleMarketChanges;
+import com.mvasce.betfair.ingestion.state.BetfairState;
+import com.mvasce.betfair.ingestion.state.StateManagerInterface;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +40,7 @@ public class BetfairConfiguration {
     private String eventTypeId;
     @Value("${betfair.marketType}")
     private String marketType;
+
     @Autowired
     private final KafkaHandleMarketChanges handler;
     @Autowired

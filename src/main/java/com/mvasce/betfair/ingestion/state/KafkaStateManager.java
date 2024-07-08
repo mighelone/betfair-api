@@ -1,4 +1,4 @@
-package com.mvasce.betfair.state;
+package com.mvasce.betfair.ingestion.state;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
