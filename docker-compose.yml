@@ -45,5 +45,5 @@ services:
       - java
       - -cp
       - '@/app/jib-classpath-file'
-      - com.mvasce.betfair.BetfairApplication
+      - com.mvasce.betfair.ingestion.BetfairApplication
       - --spring.kafka.bootstrap-servers=kafka:9092

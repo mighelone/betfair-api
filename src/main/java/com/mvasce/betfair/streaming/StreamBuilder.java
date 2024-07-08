@@ -10,29 +10,33 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.support.serializer.JsonSerde;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Slf4j
-@Configuration
 @RequiredArgsConstructor
+@Component
 public class StreamBuilder {
 
-//    @Value("${betfair.}")
-    final String inputTopic;
+//    @Value("${betfair.topics.market-changes}")
+    final String inputTopic = "market-changes";
 
-    final String outputTopic;
+//    @Value("${betfair.topics.orderbook}")
+    final String outputTopic = "orderbook";
 
-    final String materializedOrderbook;
+//    final String materializedOrderbook = "orderbook";
 
     @Autowired
     public KStream<OrderbookKey, Orderbook> buildKStream(StreamsBuilder builder) {
+
         KStream<String, MarketChange> marketChanges = builder.stream(
-                inputTopic,
-                Consumed.with(Serdes.String(), new JsonSerde<MarketChange>())
+                inputTopic
+//                Consumed.with(Serdes.String(), new JsonSerde<MarketChange>())
         );
 
         final KStream<OrderbookKey, RunnerChange> runnerChanges = marketChanges.flatMap(
@@ -52,7 +56,7 @@ public class StreamBuilder {
         final KTable<OrderbookKey, Orderbook> orderbookTable = runnerChanges.groupByKey().aggregate(
                 Orderbook::empty,
                 (key, value, aggregate) -> aggregate.update(value.rc().getBdatb(), value.rc().getBdatl(), value.metadata()),
-                Materialized.as(materializedOrderbook)
+                Materialized.as("orderbook")
         );
         final KStream<OrderbookKey, Orderbook> orderbooks = orderbookTable.toStream();
         orderbooks.to(outputTopic);

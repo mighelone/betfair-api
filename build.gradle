@@ -25,6 +25,10 @@ repositories {
 	mavenCentral()
 }
 
+//application {
+//	mainClassName = "com.mvasce.betfair.ingestion.BetfairApplication"
+//}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.apache.kafka:kafka-streams'
@@ -65,11 +69,17 @@ tasks.named('test') {
 task runApp(type: JavaExec) {
 	classpath = sourceSets.main.runtimeClasspath
 
-	mainClass = 'com.mvasce.betfair.BetfairApplication'
+	mainClass = 'com.mvasce.betfair.ingestion.BetfairApplication'
 
 }
 
+
+
 jib {
+	container {
+		mainClass = 'com.mvasce.betfair.ingestion.BetfairApplication'
+	}
+
 	from {
 		image = "openjdk:22"
 	}

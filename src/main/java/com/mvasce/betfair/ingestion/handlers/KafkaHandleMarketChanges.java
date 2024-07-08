@@ -6,6 +6,7 @@ import com.betfair.esa.swagger.model.MarketChange;
 import com.betfair.esa.swagger.model.OrderMarketChange;
 import com.betfair.esa.swagger.model.StatusMessage;
 import com.mvasce.betfair.ingestion.state.StateManagerInterface;
+import com.mvasce.betfair.models.MarketChangeKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ import org.springframework.stereotype.Component;
 public class KafkaHandleMarketChanges implements ChangeMessageHandler {
 
     @Autowired
-    private final KafkaTemplate<String,com.mvasce.betfair.models.MarketChange> kafkaTemplate;
+    private final KafkaTemplate<MarketChangeKey,com.mvasce.betfair.models.MarketChange> kafkaTemplate;
 
     @Autowired
     private final StateManagerInterface stateManager;
@@ -35,7 +36,7 @@ public class KafkaHandleMarketChanges implements ChangeMessageHandler {
 
     @Override
     public void onMarketChange(ChangeMessage<MarketChange> change) {
-        log.info("Market Change" + change.getChangeType());
+        log.info("Market Change{}", change.getChangeType());
         change.getItems().forEach(
                 x -> {
                     com.mvasce.betfair.models.MarketChange market = new com.mvasce.betfair.models.MarketChange(
@@ -52,7 +53,7 @@ public class KafkaHandleMarketChanges implements ChangeMessageHandler {
                     );
                     kafkaTemplate.send(
                             topic,
-                            x.getId(),
+                            new MarketChangeKey(x.getId()),
                             market
                     );
                     if (log.isDebugEnabled()) log.debug("Market Id={}", x.getId());
