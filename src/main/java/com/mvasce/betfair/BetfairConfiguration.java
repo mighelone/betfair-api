@@ -7,7 +7,6 @@ import com.betfair.esa.swagger.model.MarketFilter;
 import com.betfair.esa.swagger.model.MarketSubscriptionMessage;
 import com.mvasce.betfair.handlers.KafkaHandleMarketChanges;
 import com.mvasce.betfair.state.BetfairState;
-import com.mvasce.betfair.state.FileStateManager;
 import com.mvasce.betfair.state.StateManagerInterface;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,12 +43,12 @@ public class BetfairConfiguration {
     @Autowired
     private final KafkaHandleMarketChanges handler;
     @Autowired
-    private StateManagerInterface stateManager;
+    private final StateManagerInterface stateManager;
 
 
     @Bean
     public Client getClient() {
-        log.info("Initializing client: host: " + hostName  );
+        log.info("Initializing client: host: {}", hostName);
         AppKeyAndSessionProvider sessionProvider = new AppKeyAndSessionProvider(ssoHost, appKey, username, password);
         Client client = new Client(hostName, port, sessionProvider);
         client.setAutoReconnect(true);

@@ -7,19 +7,20 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.*;
 
+@Component
 @Slf4j
 @RequiredArgsConstructor
 public class KafkaStateManager implements StateManagerInterface{
 
-    @Value(value = "${betfair.state.topic}")
-    private final String topic;
+//    @Value(value = "${betfair.state.topic}")
+    private final String topic = "market-state";
 
     @Autowired
     private final KafkaTemplate<String, BetfairState> kafkaTemplate;
@@ -31,7 +32,7 @@ public class KafkaStateManager implements StateManagerInterface{
     @Override
     public void setState(String clk, String initialClk) {
         BetfairState state = new BetfairState(clk, initialClk);
-        kafkaTemplate.send(topic, state);
+        kafkaTemplate.send(topic, "betfair", state);
     }
 
     @Override
@@ -40,13 +41,16 @@ public class KafkaStateManager implements StateManagerInterface{
         try (Consumer<String, BetfairState> consumer = consumerFactory.createConsumer("group")) {
             TopicPartition tp = new TopicPartition(topic, 0);
             final long offset = consumer.endOffsets(Set.of(tp)).get(tp) - 1;
+            if (offset < 0) {
+                log.warn("No offset defined in topic {}", topic);
+                return null;
+            }
+            consumer.assign(Set.of(tp));
             consumer.seek(tp, offset);
-            BetfairState state;
-            final ConsumerRecords<String, BetfairState> records = consumer.poll(Duration.ZERO);
+            final ConsumerRecords<String, BetfairState> records = consumer.poll(Duration.ofSeconds(1));
             final List<ConsumerRecord<String, BetfairState>> recordList = records.records(tp);
             final ConsumerRecord<String, BetfairState> record = recordList.get(recordList.size() - 1);
-            if (record == null) return null;
-            return record.value();
+            return record != null ? record.value() : null;
         }
     }
 }
