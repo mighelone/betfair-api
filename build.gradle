@@ -66,14 +66,22 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+springBoot {
+	mainClass = 'com.mvasce.betfair.ingestion.BetfairApplication'
+}
+
 task runApp(type: JavaExec) {
 	classpath = sourceSets.main.runtimeClasspath
-
 	mainClass = 'com.mvasce.betfair.ingestion.BetfairApplication'
 
 }
 
-
+task(runStreaming, dependsOn: 'classes', type: JavaExec) {
+	main = 'com.mvasce.betfair.streaming.OrderbookRunner'
+	classpath = sourceSets.main.runtimeClasspath
+//	args 'mrhaki'
+//	systemProperty 'simple.message', 'Hello '
+}
 
 jib {
 	container {

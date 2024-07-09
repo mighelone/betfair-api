@@ -1,42 +1,43 @@
 package com.mvasce.betfair.streaming;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mvasce.betfair.models.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.protocol.types.Field;
-import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.support.serializer.JsonSerde;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class StreamBuilder {
 
-//    @Value("${betfair.topics.market-changes}")
-    final String inputTopic = "market-changes";
+    @Value("${betfair.topics.market-changes}")
+    String inputTopic; // = "market-changes";
 
-//    @Value("${betfair.topics.orderbook}")
-    final String outputTopic = "orderbook";
+    @Value("${betfair.topics.orderbook}")
+    String outputTopic; // = "orderbook";
 
 //    final String materializedOrderbook = "orderbook";
 
     @Autowired
     public KStream<OrderbookKey, Orderbook> buildKStream(StreamsBuilder builder) {
-
-        KStream<String, MarketChange> marketChanges = builder.stream(
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        JsonSerde<MarketChangeKey> keySerde = new JsonSerde<MarketChangeKey>(mapper);
+        keySerde.deserializer().addTrustedPackages("*");
+        JsonSerde<MarketChangeMessage> valueSerde = new JsonSerde<MarketChangeMessage>(mapper);
+        valueSerde.deserializer().addTrustedPackages("*");
+        final KStream<MarketChangeKey, MarketChangeMessage> marketChanges = builder.stream(
                 inputTopic
-//                Consumed.with(Serdes.String(), new JsonSerde<MarketChange>())
+                ,
+                Consumed.with(keySerde, valueSerde)
         );
 
         final KStream<OrderbookKey, RunnerChange> runnerChanges = marketChanges.flatMap(
