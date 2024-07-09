@@ -21,11 +21,13 @@ public record Orderbook(
 
     static protected List<OrderbookLevel> updatePrices(List<OrderbookLevel> oldPrices, List<List<Double>> newPrices) {
         List<OrderbookLevel> updatedPrices = new ArrayList<>(oldPrices);
-        for (List<Double> price : newPrices) {
-            updatedPrices.set(
-                    price.get(0).intValue(),
-                    new OrderbookLevel(price.get(1), price.get(2))
-            );
+        if (newPrices != null) {
+            for (List<Double> price : newPrices) {
+                updatedPrices.set(
+                        price.get(0).intValue(),
+                        new OrderbookLevel(price.get(1), price.get(2))
+                );
+            }
         }
         return updatedPrices;
     }
