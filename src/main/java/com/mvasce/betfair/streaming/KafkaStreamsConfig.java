@@ -1,5 +1,6 @@
 package com.mvasce.betfair.streaming;
 
+import com.betfair.esa.swagger.model.MarketDefinition;
 import com.mvasce.betfair.models.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.streams.KeyValue;
@@ -11,6 +12,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.EnableKafkaStreams;
 import org.springframework.kafka.support.serializer.JsonSerde;
+
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Configuration
@@ -27,48 +31,56 @@ public class KafkaStreamsConfig {
 
     @Bean
     public KStream<OrderbookKey, Orderbook> kStream(StreamsBuilder kStreamBuilder) {
-        JsonSerde<MarketChangeKey> keySerde = new JsonSerde<>(MarketChangeKey.class).forKeys().noTypeInfo();
-        JsonSerde<MarketChangeMessage> valueSerde = new JsonSerde<>(MarketChangeMessage.class).noTypeInfo();
         final KStream<MarketChangeKey, MarketChangeMessage> marketChanges = kStreamBuilder.stream(inputTopic);
-//        final KStream<MarketChangeKey, MarketChangeMessage> marketChanges = kStreamBuilder.stream(inputTopic,
-//                Consumed.with(keySerde, valueSerde)
-//        );
-
         final KStream<OrderbookKey, RunnerChange> runnerChanges = marketChanges.flatMap(
                 (key, value) -> {
                     OrderbookMetadata metadata = new OrderbookMetadata(value.arrivalTime(), value.publishTime(), value.changeType(), value.segmentType());
                     com.betfair.esa.swagger.model.MarketChange mc = value.marketChange();
                     String marketId = mc.getId();
+
+                    final MarketDefinition marketDefinition = mc.getMarketDefinition();
+                    MarketMetadata marketMetadata = new MarketMetadata(
+                            mc.isImg(),
+                            mc.getTv(),
+                            mc.getMarketDefinition()
+                    );
+                    if (Optional.ofNullable(mc.getMarketDefinition()).map(MarketDefinition::getStatus).orElse(MarketDefinition.StatusEnum.OPEN).equals(MarketDefinition.StatusEnum.CLOSED)) {
+                        log.warn(
+                                "Market {} closed -> available runners {}",
+                                marketId,
+                                Optional.ofNullable(mc.getRc()).map(List::size).orElse(0)
+                                );
+                    }
                     return mc.getRc().stream().map(
                             rc -> new KeyValue<>(
                                     new OrderbookKey(marketId, rc.getId(), rc.getHc()),
-                                    new RunnerChange(mc.getId(), rc, metadata)
+                                    new RunnerChange(
+                                            mc.getId(),
+                                            rc,
+                                            metadata,
+                                            marketMetadata
+                                    )
                             )
 
                     ).toList();
                 }
         );
-//        JsonSerde<OrderbookKey>
-//        Materialized.with()
         final KTable<OrderbookKey, Orderbook> orderbookTable = runnerChanges
-                .groupByKey(
-//                        Grouped.with(
-//                              new JsonSerde<>(OrderbookKey.class).forKeys().noTypeInfo(),
-//                              new JsonSerde<>(RunnerChange.class).noTypeInfo()
-//                        )
-                )
+                .groupByKey()
                 .aggregate(
                     Orderbook::empty,
-                    (key, value, aggregate) -> aggregate.update(value.rc().getBdatb(), value.rc().getBdatl(), value.metadata()),
+                    (key, value, aggregate) -> {
+                        boolean img = value.marketMetadata().img() != null ? value.marketMetadata().img() : false;
+                        if ( img ) {
+                            log.warn("Recreate orderbook for key = {}", key);
+                            aggregate = Orderbook.empty();
+                        }
+                        return aggregate.update(value.rc().getBdatb(), value.rc().getBdatl(), value.metadata());
+                    },
                         Materialized.as("orderbook")
-//                        Materialized.with(
-//                                new JsonSerde<>(OrderbookKey.class).forKeys().noTypeInfo(),
-//                                new JsonSerde<>(Orderbook.class).noTypeInfo()
-//                        )
             );
 
         final KStream<OrderbookKey, Orderbook> orderbooks = orderbookTable.toStream();
-//        orderbooks.print(Printed.toSysOut());
         orderbooks.to(outputTopic);
         return orderbooks;
     }

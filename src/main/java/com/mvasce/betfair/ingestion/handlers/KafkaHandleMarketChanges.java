@@ -37,7 +37,7 @@ public class KafkaHandleMarketChanges implements ChangeMessageHandler {
 
     @Override
     public void onMarketChange(ChangeMessage<MarketChange> change) {
-        log.info("Market Change{}", change.getChangeType());
+        log.info("Market Change {}", change.getChangeType());
         change.getItems().forEach(
                 x -> {
                     MarketChangeMessage market = new MarketChangeMessage(
