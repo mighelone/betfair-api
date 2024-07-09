@@ -29,11 +29,10 @@ public class KafkaStreamsConfig {
     public KStream<OrderbookKey, Orderbook> kStream(StreamsBuilder kStreamBuilder) {
         JsonSerde<MarketChangeKey> keySerde = new JsonSerde<>(MarketChangeKey.class).forKeys().noTypeInfo();
         JsonSerde<MarketChangeMessage> valueSerde = new JsonSerde<>(MarketChangeMessage.class).noTypeInfo();
-        final KStream<MarketChangeKey, MarketChangeMessage> marketChanges = kStreamBuilder.stream(inputTopic,
-                Consumed.with(keySerde, valueSerde)
-        );
-
-//        marketChanges.print(Printed.toSysOut());
+        final KStream<MarketChangeKey, MarketChangeMessage> marketChanges = kStreamBuilder.stream(inputTopic);
+//        final KStream<MarketChangeKey, MarketChangeMessage> marketChanges = kStreamBuilder.stream(inputTopic,
+//                Consumed.with(keySerde, valueSerde)
+//        );
 
         final KStream<OrderbookKey, RunnerChange> runnerChanges = marketChanges.flatMap(
                 (key, value) -> {
@@ -53,18 +52,19 @@ public class KafkaStreamsConfig {
 //        Materialized.with()
         final KTable<OrderbookKey, Orderbook> orderbookTable = runnerChanges
                 .groupByKey(
-                        Grouped.with(
-                              new JsonSerde<>(OrderbookKey.class).forKeys().noTypeInfo(),
-                              new JsonSerde<>(RunnerChange.class).noTypeInfo()
-                        )
+//                        Grouped.with(
+//                              new JsonSerde<>(OrderbookKey.class).forKeys().noTypeInfo(),
+//                              new JsonSerde<>(RunnerChange.class).noTypeInfo()
+//                        )
                 )
                 .aggregate(
                     Orderbook::empty,
                     (key, value, aggregate) -> aggregate.update(value.rc().getBdatb(), value.rc().getBdatl(), value.metadata()),
-                        Materialized.with(
-                                new JsonSerde<>(OrderbookKey.class).forKeys().noTypeInfo(),
-                                new JsonSerde<>(Orderbook.class).noTypeInfo()
-                        )
+                        Materialized.as("orderbook")
+//                        Materialized.with(
+//                                new JsonSerde<>(OrderbookKey.class).forKeys().noTypeInfo(),
+//                                new JsonSerde<>(Orderbook.class).noTypeInfo()
+//                        )
             );
 
         final KStream<OrderbookKey, Orderbook> orderbooks = orderbookTable.toStream();
