@@ -47,3 +47,16 @@ services:
       - '@/app/jib-classpath-file'
       - com.mvasce.betfair.ingestion.BetfairApplication
       - --spring.kafka.bootstrap-servers=kafka:9092
+
+  streaming:
+    image: mighelone/betfair-api:0.0.1
+    restart: always
+    depends_on:
+      - kafka
+      - betfair-client
+    entrypoint:
+      - java
+      - -cp
+      - '@/app/jib-classpath-file'
+      - com.mvasce.betfair.streaming.OrderbookRunner
+      - --spring.kafka.streams.bootstrap-servers=kafka:9092
