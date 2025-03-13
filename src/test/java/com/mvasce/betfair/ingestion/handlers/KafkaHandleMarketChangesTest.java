@@ -2,9 +2,7 @@ package com.mvasce.betfair.ingestion.handlers;
 
 import com.betfair.esa.client.Client;
 import com.betfair.esa.client.protocol.ChangeMessage;
-import com.betfair.esa.client.protocol.ChangeType;
 import com.betfair.esa.swagger.model.MarketChange;
-import com.betfair.esa.swagger.model.OrderMarketChange;
 import com.mvasce.betfair.ingestion.state.BetfairState;
 import com.mvasce.betfair.ingestion.state.StateManagerInterface;
 import com.mvasce.betfair.models.MarketChangeKey;
@@ -13,34 +11,22 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.common.protocol.types.Field;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.kafka.test.rule.EmbeddedKafkaRule;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -56,9 +42,6 @@ class KafkaHandleMarketChangesTest {
 
     @MockBean
     private Client client;
-
-    @Autowired
-    private ConsumerFactory<String, BetfairState> consumerFactory;
 
     @MockBean
     private StateManagerInterface stateManager;
@@ -79,21 +62,22 @@ class KafkaHandleMarketChangesTest {
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         properties.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
 
-// /
         ConsumerFactory<MarketChangeKey, MarketChangeMessage> cf = new DefaultKafkaConsumerFactory<>(properties);
         final Consumer<MarketChangeKey, MarketChangeMessage> consumer = cf.createConsumer();
 
         this.embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer, "market-changes");
         final ConsumerRecords<MarketChangeKey, MarketChangeMessage> records = KafkaTestUtils.getRecords(consumer);
 
+        // verify that only 1 message was produced
         assertEquals(records.count(), 1);
         final ConsumerRecord<MarketChangeKey, MarketChangeMessage> record = records.records("market-changes").iterator().next();
+        // verify the key of the message
         assertEquals(
                 record.key(),
                 new MarketChangeKey("1.234556")
         );
+        // verify that the mock stateManager.setState was invoked with the given state
         Mockito.verify(stateManager, Mockito.times(1)).setState("AAAAAAA", "BBBBBB");
-//        Mockito.verify(stateManager).setState(Mockito.argThat((x, y) -> "AAAAAAA".equals(x) && "BBBBBB".equals(y)));
     }
 
     private ChangeMessage<MarketChange> getChangeMessage() {

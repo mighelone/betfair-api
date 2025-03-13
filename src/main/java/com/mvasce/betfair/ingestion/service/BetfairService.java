@@ -26,7 +26,9 @@ public class BetfairService {
     @EventListener(ApplicationReadyEvent.class)
     void run()  {
         try {
+            log.info("Starting Betfair client");
             client.start();
+            log.info("Subscribing to {}", marketSubscriptionMessage);
             client.marketSubscription(marketSubscriptionMessage);
         } catch (InvalidCredentialException | ConnectionException | StatusException e) {
             throw new RuntimeException(e);

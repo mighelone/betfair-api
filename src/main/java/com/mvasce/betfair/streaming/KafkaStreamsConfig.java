@@ -11,12 +11,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.EnableKafkaStreams;
-import org.springframework.kafka.support.serializer.JsonSerde;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @Slf4j
 @Configuration
@@ -40,7 +37,6 @@ public class KafkaStreamsConfig {
                     com.betfair.esa.swagger.model.MarketChange mc = value.marketChange();
                     String marketId = mc.getId();
 
-                    final MarketDefinition marketDefinition = mc.getMarketDefinition();
                     MarketMetadata marketMetadata = new MarketMetadata(
                             mc.isImg(),
                             mc.getTv(),
