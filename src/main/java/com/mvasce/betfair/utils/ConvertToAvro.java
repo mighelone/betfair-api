@@ -1,4 +1,4 @@
-package com.mvasce.betfair;
+package com.mvasce.betfair.utils;
 
 import com.betfair.esa.swagger.model.MarketChange;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -8,8 +8,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.avro.Schema;
 
 public class ConvertToAvro {
-    private AvroMapper mapper;
-    private AvroSchemaGenerator generator;
+    private final AvroMapper mapper;
+    private final AvroSchemaGenerator generator;
 
     public ConvertToAvro() {
         mapper = AvroMapper.builder().build();
